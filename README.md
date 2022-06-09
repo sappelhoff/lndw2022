@@ -81,6 +81,8 @@ Furthermore, you will need the following software:
     1. Use the "green" slot for the 32 electrodes
 1. Start recording data, run the RDA LSL client and "link" it to stream the data live to the local network
 1. From a command line prompt, run `python main.py` (after activating the conda environment, see above)
+1. You can stop the program by clicking on the colorful PsychoPy window and pressing "escape"
+   (or interrupt it by pressing ctrl+c in the command line prompt)
 
 # Files in this repository
 

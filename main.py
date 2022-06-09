@@ -10,6 +10,7 @@ import time
 
 import mne
 import numpy as np
+from psychopy import event, visual
 from pylsl import StreamInlet, resolve_stream
 
 # %%
@@ -55,14 +56,24 @@ n_fft = 128
 assert n_fft < n_samples, "n_fft must be <= n_samples"
 
 # We will subtract power from posterior and frontal channels
-posterior_chs = []
-frontal_chs = []
+posterior_chs = ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
+frontal_chs = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
 picks_posterior = mne.pick_channels(info, posterior_chs)
 picks_frontal = mne.pick_channels(info, frontal_chs)
 
 # %%
 # Psychopy window settings
-pass
+# The colors that are going to be switched
+c0 = (1, 0, 0)
+c1 = (0, 0, 1)
+
+# Opening a window
+# NOTE: We don't define a monitor so this will raise an expected and benign warning
+win = visual.Window(
+    color=c0,
+    fullscr=False,
+    size=(300, 150),  # pixels
+)
 
 # %%
 # Connect to the BrainVision Recorder RDA (Remote Data Access)
@@ -75,10 +86,11 @@ inlet = StreamInlet(streams[0])
 # Begin the loop
 
 # first clear all present not-yet-pulled samples from the buffer
-inlet.flush()
+_ = inlet.flush()
 
-# end this by interrupting the process (ctrl+c)
-while True:
+# end this program by clicking on the psychopy window and pressing "escape"
+finished = False
+while not finished:
 
     # measure time that this iteration takes
     tstart_ns = time.perf_counter_ns()
@@ -103,16 +115,39 @@ while True:
     power_frontal = np.mean(psds[0, picks_frontal, :])
 
     # Take the sign of the difference: this is our "color switch"
-    switch = np.sign(power_posterior - power_frontal)
-    print(f"State of switch: {switch}")
+    # This can be zero or 1 and defaults to 0, if power is equal in
+    # posterior and frontal channels
+    switch = int((1 + np.sign(power_posterior - power_frontal)) / 2)
+    print(
+        f"State of switch: {switch}    "
+        f"(posterior vs frontal: {power_posterior:.1f} vs {power_frontal:.1f})"
+    )
+
+    # switch the window color
+    # here we need to flip twice because we change the window background color
+    c = c1 if switch else c0
+    win.color = c
+    _ = win.flip()
+    _ = win.flip()
+
+    # Check if somebody pressed escape. If yes, exit gracefully
+    keys = event.getKeys(keyList=["escape"])
+    if keys:
+        print("\n    >>>> Registered an 'escape' key ... terminating program.\n")
+        win.close()
+        inlet.close_stream()
+        finished = True
 
     # If this iteration took too long, we need to flush the buffer,
     # so that we always have fresh data
     tstop_ns = time.perf_counter_ns()
     titer_s = tstop_ns - tstart_ns * 1e-9
     if titer_s > (n_samples / sfreq):
-        print(f"\n    >>>> Iteration took {titer_s} s ... clearing buffer.\n")
-        inlet.flush()
+        dropped_samples = inlet.flush()
+        print(
+            f"\n    >>>> Iteration took {titer_s} s ... clearing buffer."
+            f"\n    >>>> (dropped {dropped_samples} samples)\n"
+        )
 
-    # Start next iteration
-    pass
+    # Start next iteration and repeat until the end
+    ...
