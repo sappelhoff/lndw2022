@@ -1,0 +1,17 @@
+name: lndw2022
+channels:
+- conda-forge
+dependencies:
+- python=3.8
+- pip
+- ipython
+- liblsl
+- mne
+- mne-realtime
+- psychopy
+- black
+- isort
+- flake8
+- flake8-docstrings
+- pip:
+  - pylsl
