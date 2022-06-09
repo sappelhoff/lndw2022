@@ -8,7 +8,8 @@ for the Adaptive Memory and Decision Making group (AMD).
 In 2022, the LNdW will happen on the 2nd of July.
 
 The repository is hosted on GitHub: https://github.com/sappelhoff/lndw2022
-And it is mirrored on the ARC GitLab (internal only): https://arc-git.mpib-berlin.mpg.de/appelhoff/lndw2022
+
+It is mirrored on the ARC GitLab (internal only): https://arc-git.mpib-berlin.mpg.de/appelhoff/lndw2022
 
 # General overview
 
