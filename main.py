@@ -3,15 +3,37 @@
 For more information, see the `README.md` file and follow the steps from the
 "Running the project" section.
 
-sfreq: 250hz
 buffer len: 1s
 bandpass between 1Hz and 30Hz
 
 """
-from pylsl import StreamInlet, resolve_stream
+# %%
+# Imports
 import mne
 import numpy as np
+from pylsl import StreamInlet, resolve_stream
 
+# %%
+# Create the information about the data we expect
+# channel names correspond to "green" slot of electrodes in the control box
+# fmt: off
+ch_names = [
+    "Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "FT9", "FC5", "FC1", "FC2", "FC6",
+    "FT10", "T7", "C3", "Cz", "C4", "T8", "CP5", "CP1", "CP2", "CP6", "TP9", "P7",
+    "P3", "Pz", "P4", "P8", "TP10", "O1", "Oz", "O2"]
+# fmt: on
+sfreq = 250.0
+ch_types = ["eeg"] * len(ch_names) + ["misc"]
+ch_names += ["marker"]  # there is an additional marker channel inserted by LSL
+
+info = mne.create_info(ch_names, sfreq, ch_types)
+
+# Add standard 10-20 positions: "easycap-M1" corresponds to the acticap-64ch-standard2
+# caps that we use in the lab
+info.set_montage("easycap-M1")
+
+
+# %%
 # Connect to the BrainVision Recorder RDA (Remote Data Access)
 # (needs to be switched on in BrainVision Recorder)
 streams = resolve_stream("type", "EEG")

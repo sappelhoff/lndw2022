@@ -5,8 +5,10 @@
 
 This repository contains code for the LNdW 2022 at the Max Planck Institute for Human Development (MPIB)
 for the Adaptive Memory and Decision Making group (AMD).
+In 2022, the LNdW will happen on the 2nd of July.
 
-In 2022, this will happen on the 2nd of July.
+The repository is hosted on GitHub: https://github.com/sappelhoff/lndw2022
+And it is mirrored on the ARC GitLab (internal only): https://arc-git.mpib-berlin.mpg.de/appelhoff/lndw2022
 
 # General overview
 
@@ -59,7 +61,7 @@ remaining dependencies: `mamba env create -f environment.yml`
 
 Running `conda activate lndw2022` will then provide you with an appropriate environment.
 
-The most important dependencies are
+The most important dependencies are:
 
 - `pylsl` for getting the live EEG data
 - `mne` for processing the EEG data
@@ -75,6 +77,8 @@ Furthermore, you will need the following software:
 
 1. In the BrainVision Recorder settings, make sure Remote Data Access (RDA) is **enabled** (see manual)
 1. Setup the hardware (see manual) with the laptop
+    1. Set the sampling frequency in BrainVision Recorder to 250 Hz
+    1. Use the "green" slot for the 32 electrodes
 1. Start recording data, run the RDA LSL client and "link" it to stream the data live to the local network
 1. From a command line prompt, run `python main.py` (after activating the conda environment, see above)
 
