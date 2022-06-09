@@ -1,6 +1,7 @@
 """Setup BCI for Long Night of the Sciences (LNdW) 2022.
 
-For more information, see the `README.md` file.
+For more information, see the `README.md` file and follow the steps from the
+"Running the project" section.
 
 sfreq: 250hz
 buffer len: 1s
@@ -29,11 +30,11 @@ chunk, timestamps = inlet.pull_chunk(timeout=0.0, max_samples=1000)
 # Then convert to mne Epochs
 info = 1
 n_samples = 1000
-wait_time = n_samples * 5. / info['sfreq']
+wait_time = n_samples * 5.0 / info["sfreq"]
 samples, _ = inlet.pull_chunk(max_samples=n_samples, timeout=wait_time)
 data = np.vstack(samples).T
 
 events = np.expand_dims(np.array([0, 1, 1]), axis=0)
-picks = mne.io.pick._picks_to_idx(info, "eeg", 'all', exclude=())
+picks = mne.io.pick._picks_to_idx(info, "eeg", "all", exclude=())
 info = mne.io.pick.pick_info(info, picks)
 epochs = mne.EpochsArray(data[picks][np.newaxis], info, events)

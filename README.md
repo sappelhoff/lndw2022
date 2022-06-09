@@ -77,3 +77,12 @@ Furthermore, you will need the following software:
 1. Setup the hardware (see manual) with the laptop
 1. Start recording data, run the RDA LSL client and "link" it to stream the data live to the local network
 1. From a command line prompt, run `python main.py` (after activating the conda environment, see above)
+
+# Files in this repository
+
+- `README.md` --> the README file you are reading
+- `main.py` --> the main script for running the project
+- `environment.yml` --> a list of most of the software dependencies
+- `LICENSE` --> how the code and documentation in this project are licensed (but not the general idea)
+- `.gitignore` --> which files to ignore in the version control via git
+- `setup.cfg` --> configuration that is relevant when developing the code
