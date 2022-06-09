@@ -34,13 +34,13 @@ info.set_montage("easycap-M1")
 
 # %%
 # EEG Settings
-# how many samples to pull: sfreq = 1 second (Hz)
+# How many samples to pull: sfreq = 1 second (Hz)
 n_samples = sfreq
 
-# how many seconds to wait until data is there
+# How many seconds to wait until data is there
 max_wait = (n_samples / sfreq) * 5
 
-# default "events" that we will use for each incoming data
+# Default "events" that we will use for each incoming data
 events = np.expand_dims(np.array([0, 1, 1]), axis=0)
 
 # Later on, we will only be interested in EEG channels
@@ -51,7 +51,7 @@ info = mne.pick_info(info, picks)
 fmin = 8
 fmax = 12
 
-# needed for psd_welch
+# Needed for psd_welch
 n_fft = 128
 assert n_fft < n_samples, "n_fft must be <= n_samples"
 
@@ -77,7 +77,7 @@ win = visual.Window(
 
 # %%
 # Connect to the BrainVision Recorder RDA (Remote Data Access)
-# (needs to be switched on in BrainVision Recorder)
+# (needs to be switched on in BrainVision Recorder settings)
 streams = resolve_stream("type", "EEG")
 assert len(streams) == 1, f"expected one stream, but found: {len(streams)}"
 inlet = StreamInlet(streams[0])
@@ -85,28 +85,31 @@ inlet = StreamInlet(streams[0])
 # %%
 # Begin the loop
 
-# first clear all present not-yet-pulled samples from the buffer
+# First clear all present not-yet-pulled samples from the buffer
 _ = inlet.flush()
 
-# end this program by clicking on the psychopy window and pressing "escape"
+print(
+    "Starting the program. Click on the PsychoPy window and press 'escape' to quit."
+    "\n------------------------------"
+)
 finished = False
 while not finished:
 
-    # measure time that this iteration takes
+    # Measure time that this iteration takes
     tstart_ns = time.perf_counter_ns()
 
-    # pull a chunk of data: `chunk` is a list of lists, each list corresponding to a
+    # Pull a chunk of data: `chunk` is a list of lists, each list corresponding to a
     # sample with an associated timestamp. Each list is of length n_channels + 1, in
     # order as defined in BrainVision Recorder workspace setup. The last channel ("+1")
     # is a marker channel that can be ignored.
-    chunk, timestamps = inlet.pull_chunk(timeout=max_wait, max_samples=n_samples)
+    chunk, _ = inlet.pull_chunk(timeout=max_wait, max_samples=n_samples)
 
     # Then convert to mne Epochs
     data = np.vstack(chunk).T
     epochs = mne.EpochsArray(data[picks][np.newaxis], info, events, verbose=0)
 
     # Calculate power spectrum, ´psds´ is of shape (n_epochs, n_channels, n_freqs)
-    psds, freqs = mne.time_frequency.psd_welch(
+    psds, _ = mne.time_frequency.psd_welch(
         epochs, fmin, fmax, n_fft=n_fft, average="mean", verbose=0
     )
 
@@ -115,7 +118,7 @@ while not finished:
     power_frontal = np.mean(psds[0, picks_frontal, :])
 
     # Take the sign of the difference: this is our "color switch"
-    # This can be zero or 1 and defaults to 0, if power is equal in
+    # This can be 0 or 1 and defaults to 0, if power is equal in
     # posterior and frontal channels
     switch = int((1 + np.sign(power_posterior - power_frontal)) / 2)
     print(
@@ -123,10 +126,9 @@ while not finished:
         f"(posterior vs frontal: {power_posterior:.1f} vs {power_frontal:.1f})"
     )
 
-    # switch the window color
-    # here we need to flip twice because we change the window background color
-    c = c1 if switch else c0
-    win.color = c
+    # Switch the window color
+    # ... need to flip twice because we change the window *background*
+    win.color = c1 if switch else c0
     _ = win.flip()
     _ = win.flip()
 
@@ -145,7 +147,7 @@ while not finished:
     if titer_s > (n_samples / sfreq):
         dropped_samples = inlet.flush()
         print(
-            f"\n    >>>> Iteration took {titer_s} s ... clearing buffer."
+            f"\n    >>>> Iteration took {titer_s} s ... clearing buffer to start new."
             f"\n    >>>> (dropped {dropped_samples} samples)\n"
         )
 
