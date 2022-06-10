@@ -22,7 +22,7 @@ ch_names = [
     "FT10", "T7", "C3", "Cz", "C4", "T8", "CP5", "CP1", "CP2", "CP6", "TP9", "P7",
     "P3", "Pz", "P4", "P8", "TP10", "O1", "Oz", "O2"]
 # fmt: on
-sfreq = 250
+sfreq = 100
 ch_types = ["eeg"] * len(ch_names) + ["misc"]
 ch_names += ["marker"]  # there is an additional marker channel inserted by LSL
 
@@ -35,10 +35,10 @@ info.set_montage("easycap-M1")
 # %%
 # EEG Settings
 # How many samples to pull: sfreq = 1 second (Hz)
-n_samples = sfreq
+n_samples = sfreq * 2
 
 # How many seconds to wait until data is there
-max_wait = (n_samples / sfreq) * 5
+max_wait = (n_samples / sfreq) * 2
 
 # Default "events" that we will use for each incoming data
 events = np.expand_dims(np.array([0, 1, 1]), axis=0)
@@ -52,14 +52,14 @@ fmin = 8
 fmax = 12
 
 # Needed for psd_welch
-n_fft = 128
-assert n_fft < n_samples, "n_fft must be <= n_samples"
+n_fft = n_samples
+assert n_fft <= n_samples, "n_fft must be <= n_samples"
 
 # We will subtract power from posterior and frontal channels
 posterior_chs = ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
 frontal_chs = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
-picks_posterior = mne.pick_channels(info, posterior_chs)
-picks_frontal = mne.pick_channels(info, frontal_chs)
+picks_posterior = mne.pick_channels(info.ch_names, posterior_chs)
+picks_frontal = mne.pick_channels(info.ch_names, frontal_chs)
 
 # %%
 # Psychopy window settings
@@ -72,7 +72,7 @@ c1 = (0, 0, 1)
 win = visual.Window(
     color=c0,
     fullscr=False,
-    size=(300, 150),  # pixels
+    size=(600, 300),  # pixels
 )
 
 # %%
@@ -82,6 +82,11 @@ streams = resolve_stream("type", "EEG")
 assert len(streams) == 1, f"expected one stream, but found: {len(streams)}"
 inlet = StreamInlet(streams[0])
 
+msg = "Is the sampling rate in BrainVision Recorder correct?"
+assert inlet.info().nominal_srate() == sfreq, msg
+
+msg = "Is the number of channels in BrainVision Recorder correct?"
+assert inlet.info().channel_count() == len(ch_names), msg
 # %%
 # Begin the loop
 
@@ -95,14 +100,14 @@ print(
 finished = False
 while not finished:
 
-    # Measure time that this iteration takes
-    tstart_ns = time.perf_counter_ns()
-
     # Pull a chunk of data: `chunk` is a list of lists, each list corresponding to a
     # sample with an associated timestamp. Each list is of length n_channels + 1, in
     # order as defined in BrainVision Recorder workspace setup. The last channel ("+1")
     # is a marker channel that can be ignored.
     chunk, _ = inlet.pull_chunk(timeout=max_wait, max_samples=n_samples)
+
+    # Measure time that this iteration takes
+    tstart_ns = time.perf_counter_ns()
 
     # Then convert to mne Epochs
     data = np.vstack(chunk).T
@@ -139,11 +144,12 @@ while not finished:
         win.close()
         inlet.close_stream()
         finished = True
+        break
 
     # If this iteration took too long, we need to flush the buffer,
     # so that we always have fresh data
     tstop_ns = time.perf_counter_ns()
-    titer_s = tstop_ns - tstart_ns * 1e-9
+    titer_s = (tstop_ns - tstart_ns) * 1e-9
     if titer_s > (n_samples / sfreq):
         dropped_samples = inlet.flush()
         print(
