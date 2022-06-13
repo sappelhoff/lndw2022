@@ -85,6 +85,21 @@ Furthermore, you will need the following software:
 1. You can stop the program by clicking on the colorful PsychoPy window and pressing "escape"
    (or interrupt it by pressing ctrl+c in the command line prompt)
 
+# Testing data
+
+In the `testing_data/` directory you will find data to play around with for optimizing the BCI.
+The `offline_test` data contains four markers:
+
+- `open_relax`
+- `open_blink`
+- `closed_relax`
+- `closed_blink`
+
+where the first factor before the `_` refer to the state of the eyes, and the second factor
+(after the `_`) refers to the activity.
+After each marker, there are some seconds of data during which the respective activity was
+performed by the test session participant.
+
 # Files in this repository
 
 - `README.md` --> the README file you are reading
@@ -93,3 +108,5 @@ Furthermore, you will need the following software:
 - `LICENSE` --> how the code and documentation in this project are licensed (but not the general idea)
 - `.gitignore` --> which files to ignore in the version control via git
 - `setup.cfg` --> configuration that is relevant when developing the code
+- `testing_data/offline_test.*` --> a BrainVision file triplet (`.eeg`, `.vhdr`, `.vmrk`) for testing offline
+- `testing_data/analyze_testing_data.py` --> script for exploring the testing data
