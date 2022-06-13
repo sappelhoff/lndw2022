@@ -26,6 +26,9 @@ FREQS = [8, 14]
 SCALE_POSTERIOR = 1
 SCALE_FRONTAL = 1
 
+# Which frequency decomposition to use: "multitaper" or "welch"
+FREQ_DECOMP_METHOD = "welch"
+
 # %%
 # Create the information about the data we expect
 # channel names correspond to "green" slot of electrodes in the control box
@@ -127,9 +130,14 @@ while not finished:
     epochs = mne.EpochsArray(data[picks][np.newaxis], info, events, verbose=0)
 
     # Calculate power spectrum, ´psds´ is of shape (n_epochs, n_channels, n_freqs)
-    psds, _ = mne.time_frequency.psd_welch(
-        epochs, fmin, fmax, n_fft=n_fft, average="mean", verbose=0
-    )
+    if FREQ_DECOMP_METHOD == "welch":
+        psds, _ = mne.time_frequency.psd_welch(
+            epochs, fmin, fmax, n_fft=n_fft, average="mean", verbose=0
+        )
+    elif FREQ_DECOMP_METHOD == "multitaper":
+        psds, _ = mne.time_frequency.psd_multitaper(epochs, fmin, fmax, verbose=0)
+    else:
+        raise ValueError(f"Unknown FREQ_DECOMP_METHOD: {FREQ_DECOMP_METHOD}")
 
     # Separatetly average power for posterior and frontal channels
     power_posterior = np.mean(psds[0, picks_posterior, :])
