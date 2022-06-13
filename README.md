@@ -49,6 +49,10 @@ And additionally:
 - One more laptop and big screen for showing the presentation
 - A power strip to plug all the devices
 
+See also the `setup_drawing` directory.
+
+![Image](setup_drawing/lndw_setup_drawing.png "Hardware setup")
+
 # Software dependencies and installation
 
 First, if you don't have it installed already, download miniconda:
@@ -110,3 +114,4 @@ performed by the test session participant.
 - `setup.cfg` --> configuration that is relevant when developing the code
 - `testing_data/offline_test.*` --> a BrainVision file triplet (`.eeg`, `.vhdr`, `.vmrk`) for testing offline
 - `testing_data/analyze_testing_data.py` --> script for exploring the testing data
+- `setup_drawing/lndw_setup_*` --> three files that show the hardware setup
