@@ -29,6 +29,14 @@ SCALE_FRONTAL = 1
 # Which frequency decomposition to use: "multitaper" or "welch"
 FREQ_DECOMP_METHOD = "welch"
 
+# How to implement the BCI:
+# "sign" means take the difference between frontal and posterior average alpha power
+# "frontal boost" means switch is 0 unless frontal is x times higher than posterior
+SWITCH_TYPE = "sign"
+
+# if "SWITCH_TYPE" is "frontal boost", what should "x" be (see above); else is ignored
+FRONTAL_BOOST_FACTOR = 3
+
 # %%
 # Create the information about the data we expect
 # channel names correspond to "green" slot of electrodes in the control box
@@ -147,10 +155,17 @@ while not finished:
     power_posterior *= SCALE_POSTERIOR
     power_frontal *= SCALE_FRONTAL
 
-    # Take the sign of the difference: this is our "color switch"
-    # This can be 0 or 1 and defaults to 0, if power is equal in
-    # posterior and frontal channels
-    switch = int((1 + np.sign(power_posterior - power_frontal)) / 2)
+    if SWITCH_TYPE == "sign":
+        # Take the sign of the difference: this is our "color switch"
+        # This can be 0 or 1 and defaults to 0, if power is equal in
+        # posterior and frontal channels
+        switch = int((1 + np.sign(power_posterior - power_frontal)) / 2)
+    elif SWITCH_TYPE == "frontal boost":
+        # frontal must be much higher than posterior to make switch "1"
+        switch = 0
+    else:
+        raise ValueError(f"Unknown SWITCH_TYPE: {SWITCH_TYPE}")
+
     print(
         f"State of switch: {switch}    "
         f"(posterior vs frontal: {power_posterior:.1f} vs {power_frontal:.1f})"

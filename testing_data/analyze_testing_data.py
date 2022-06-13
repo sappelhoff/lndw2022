@@ -7,9 +7,9 @@ For more information, see the `README.md` file and the "testing data" section.
 # Imports
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import mne
 import numpy as np
-import matplotlib.pyplot as plt
 
 # %%
 # Settings
