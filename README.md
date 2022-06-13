@@ -97,7 +97,7 @@ The `offline_test` data contains four markers:
 
 where the first factor before the `_` refer to the state of the eyes, and the second factor
 (after the `_`) refers to the activity.
-After each marker, there are some seconds of data during which the respective activity was
+After each marker, there are at least 8 seconds of data during which the respective activity was
 performed by the test session participant.
 
 # Files in this repository
