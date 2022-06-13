@@ -14,6 +14,19 @@ from psychopy import event, visual
 from pylsl import StreamInlet, resolve_stream
 
 # %%
+# Settings
+# how many seconds of data to get per iteration
+# (this determines the "update" speed)
+SECONDS_TO_GET = 2
+
+# Low and high boundary over which frequencies to average
+FREQS = [8, 14]
+
+# Factors by which to scale either posterior or fronal average power
+SCALE_POSTERIOR = 1
+SCALE_FRONTAL = 1
+
+# %%
 # Create the information about the data we expect
 # channel names correspond to "green" slot of electrodes in the control box
 # fmt: off
@@ -35,7 +48,7 @@ info.set_montage("easycap-M1")
 # %%
 # EEG Settings
 # How many samples to pull: sfreq = 1 second (Hz)
-n_samples = sfreq * 2
+n_samples = sfreq * SECONDS_TO_GET
 
 # How many seconds to wait until data is there
 max_wait = (n_samples / sfreq) * 2
@@ -48,8 +61,8 @@ picks = mne.pick_types(info, eeg=True)
 info = mne.pick_info(info, picks)
 
 # The frequencies we want to average over (alpha power)
-fmin = 8
-fmax = 12
+fmin = FREQS[0]
+fmax = FREQS[1]
 
 # Needed for psd_welch
 n_fft = n_samples
@@ -121,6 +134,10 @@ while not finished:
     # Separatetly average power for posterior and frontal channels
     power_posterior = np.mean(psds[0, picks_posterior, :])
     power_frontal = np.mean(psds[0, picks_frontal, :])
+
+    # Scale the powers depending on settings
+    power_posterior *= SCALE_POSTERIOR
+    power_frontal *= SCALE_FRONTAL
 
     # Take the sign of the difference: this is our "color switch"
     # This can be 0 or 1 and defaults to 0, if power is equal in
