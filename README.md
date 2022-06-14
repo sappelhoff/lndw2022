@@ -32,6 +32,22 @@ We will show visitors a brain computer interface (BCI) and have a discussion abo
 - After a short presentation of this, we debrief the visitors, explain the "trick" and enter into a
   discussion of what **is** possible via BCIs, and what is (currently) not easily possible.
 
+**NOTE: The BCI can also be controlled in another way (see below)**
+
+The list above describes what in `main.py` is defined as `SWITCH_TYPE="switch"`.
+Instead, one can change to `SWITCH_TYPE="frontal boost"`.
+In that case, the participant is supposed to have their eyes open and either:
+
+- (i) focus on **not blinking**
+- (ii) blinking several times without anyone noticing
+
+Here the switch is "1" when the participant does not blink (frontal and posterior average alpha power are approximately equal), and "0" when the
+participant blinks (frontal average alpha power is much higher than
+posterior; see `FRONTAL_BOOST_FACTOR` in `main.py`).
+
+Depending on the participant and training, one `SWITCH_TYPE` may work better
+than the other one.
+
 # Required hardware
 
 - A Windows laptop (minimum 2 USB-A slots: one for the BrainVision Recorder dongle, one for connecting to the BrainAmp)

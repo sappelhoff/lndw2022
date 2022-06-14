@@ -31,11 +31,12 @@ FREQ_DECOMP_METHOD = "welch"
 
 # How to implement the BCI:
 # "sign" means take the difference between frontal and posterior average alpha power
-# "frontal boost" means switch is 0 unless frontal is x times higher than posterior
+# "frontal boost" means switch is 1 unless frontal is at least "x" times higher than
+# posterior
 SWITCH_TYPE = "sign"
 
 # if "SWITCH_TYPE" is "frontal boost", what should "x" be (see above); else is ignored
-FRONTAL_BOOST_FACTOR = 3
+FRONTAL_BOOST_FACTOR = 2
 
 # %%
 # Create the information about the data we expect
@@ -162,7 +163,7 @@ while not finished:
         switch = int((1 + np.sign(power_posterior - power_frontal)) / 2)
     elif SWITCH_TYPE == "frontal boost":
         # frontal must be much higher than posterior to make switch "1"
-        switch = 0
+        switch = 0 if power_frontal > (FRONTAL_BOOST_FACTOR * power_posterior) else 1
     else:
         raise ValueError(f"Unknown SWITCH_TYPE: {SWITCH_TYPE}")
 

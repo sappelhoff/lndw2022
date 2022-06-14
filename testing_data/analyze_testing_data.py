@@ -25,6 +25,7 @@ FREQ_DECOMP_METHOD = "welch"
 # %%
 # Read data
 # (TP10 is bad, but we can leave it included)
+# NOTE: Perhaps the "eyes closed" event markers were accidentally exchanged (no idea)
 raw = mne.io.read_raw_brainvision(vhdr)
 
 # %%
@@ -76,11 +77,11 @@ n_epos, n_channels, n_samples = epochs.get_data().shape
 # Calculate power spectrum density
 if FREQ_DECOMP_METHOD == "welch":
     psds, freqs = mne.time_frequency.psd_welch(
-        epochs, FREQS[0], FREQS[0], n_fft=n_samples, average="mean", verbose=0
+        epochs, FREQS[0], FREQS[1], n_fft=n_samples, average="mean", verbose=0
     )
 elif FREQ_DECOMP_METHOD == "multitaper":
     psds, freqs = mne.time_frequency.psd_multitaper(
-        epochs, FREQS[0], FREQS[0], verbose=0
+        epochs, FREQS[0], FREQS[1], verbose=0
     )
 else:
     raise ValueError(f"Unknown FREQ_DECOMP_METHOD: {FREQ_DECOMP_METHOD}")
@@ -91,10 +92,13 @@ power_posterior = psds[:, picks_posterior].mean(axis=-1).mean(axis=-1)
 power_frontal = psds[:, picks_frontal].mean(axis=-1).mean(axis=-1)
 
 switch = (1 + np.sign(power_posterior - power_frontal)) / 2
+switch2 = [0 if i > 2 * j else 1 for i, j in zip(power_frontal, power_posterior)]
 
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 8), sharex=True)
-ax1.plot(switch)
+ax1.plot(switch, label="switch=sign")
+ax1.plot(switch2, label="switch=frontal boost")
 ax1.plot(0.1 * epochs.events[:, -1], "ko")
+ax1.legend()
 
 ax2.plot(power_posterior, label="posterior")
 ax2.plot(power_frontal, label="frontal")
