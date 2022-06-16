@@ -34,7 +34,7 @@ We will show visitors a brain computer interface (BCI) and have a discussion abo
 
 **NOTE: The BCI can also be controlled in another way (see below)**
 
-The list above describes what in `main.py` is defined as `SWITCH_TYPE="switch"`.
+The list above describes what in `main.py` is defined as `SWITCH_TYPE="sign"`.
 Instead, one can change to `SWITCH_TYPE="frontal boost"`.
 In that case, the participant is supposed to have their eyes open and either:
 
