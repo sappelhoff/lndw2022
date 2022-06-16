@@ -38,12 +38,13 @@ SCALE_FRONTAL = 1
 # Which frequency decomposition to use: "multitaper" or "welch"
 FREQ_DECOMP_METHOD = "welch"
 
-# How to implement the BCI:
+# How to implement the BCI: Use "SWITCH_TYPE"
+# (generally: high posterior power = blue, high frontal power = red)
 # ----------
 # "sign" means take the difference between frontal and posterior average alpha power
 # ----------
-# "frontal boost" means switch is 1 unless frontal is at least "x" times higher than
-# posterior
+# "frontal boost" means switch is 1 (=blue) unless frontal is at least "x" times higher
+# than posterior: 0 (=red), where FRONTAL_BOOST_FACTOR below controls the "x"
 # ----------
 # "continuous" takes log10(posterior / frontal) and colors the window continuously
 # from red over purple to blue
@@ -54,9 +55,10 @@ FRONTAL_BOOST_FACTOR = 2
 
 # if "SWITCH_TYPE" is "continuous", control which value "log10(posterior / frontal)"
 # corresponds to the extreme blue or extreme red
-# good defaults are -1.5 and 1.5, which means total red if posterior is about 30 times
-# higher than frontal and vice versa for total blue
-# NOTE: you could use unsymmetric limits like [-1.5, 1]
+# good defaults are -1.5 and 1.5, which means total blue if posterior is about 30 times
+# higher than frontal and vice versa for total red
+# NOTE: you could use unsymmetric limits like [-1.5, 1] --> this would make it "easier"
+# for the window to become red again
 VLIMS = [-1.5, 1.5]
 
 # %%
@@ -105,12 +107,13 @@ picks_frontal = mne.pick_channels(info.ch_names, FRONTAL_CHS)
 # Psychopy window settings
 # The colors that are going to be switched: RGB 0-1
 # For binary switching (red/blue): "sign" or "frontal boost"
-c0 = (0.5, 0, 0)
-c1 = (0, 0, 0.5)
+c_red = (0.5, 0, 0)
+c_blue = (0, 0, 0.5)
+
 # ... or for continuous switching (red to blue): "continuous"
-cm1 = matplotlib.colors.LinearSegmentedColormap.from_list("red2blue", ["r", "b"])
+cm_r2b = matplotlib.colors.LinearSegmentedColormap.from_list("red2blue", ["r", "b"])
 cnorm = matplotlib.colors.Normalize(vmin=VLIMS[0], vmax=VLIMS[1])
-cpick = matplotlib.cm.ScalarMappable(norm=cnorm, cmap=cm1)
+cpick = matplotlib.cm.ScalarMappable(norm=cnorm, cmap=cm_r2b)
 cpick.set_array([])
 
 # Opening a window
@@ -179,14 +182,19 @@ while True:
 
     if SWITCH_TYPE == "sign":
         # Take the sign of the difference: this is our "color switch"
-        # This can be 0 or 1 and defaults to 0, if power is equal in
-        # posterior and frontal channels
+        # 0 if frontal > posterior (=red)
+        # 1 if posterior > frontal (=blue)
+        # (if equal, defaults to 0)
         switch = int((1 + np.sign(power_posterior - power_frontal)) / 2)
     elif SWITCH_TYPE == "frontal boost":
-        # frontal must be much higher than posterior to make switch "1"
+        # 1 by default (=blue)
+        # 0 if frontal is much much higher than posterior (=red)
         switch = 0 if power_frontal > (FRONTAL_BOOST_FACTOR * power_posterior) else 1
     elif SWITCH_TYPE == "continuous":
         # continuous measure (rather than 0 or 1)
+        # frontal > posterior = more red
+        # posterior > frontal = more blue
+        # (if equal = purple)
         try:
             switch = np.log10(power_posterior / power_frontal)
         except ZeroDivisionError:
@@ -206,7 +214,7 @@ while True:
         win.color = cpick.to_rgba(switch)[:3]
     else:
         # binary color red or blue
-        win.color = c1 if switch else c0
+        win.color = c_blue if switch else c_red
     _ = win.flip()
     _ = win.flip()
 
