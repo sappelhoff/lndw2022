@@ -120,10 +120,9 @@ for idot, dot in enumerate(switch3):
     ax1.plot(idot, dot, c=cpick.to_rgba(dot)[:3], marker="o")
 ax1.legend()
 
-
 ax2.plot(power_posterior, label="posterior")
 ax2.plot(power_frontal, label="frontal")
-ax2.plot(power_frontal[0] * epochs.events[:, -1], "k.")
+ax2.plot(np.median(power_frontal) * epochs.events[:, -1], "k.")
 ax2.set_title("black markers show levels: " + json.dumps(event_id))
 ax2.legend()
 
@@ -143,4 +142,5 @@ for idot, dot in enumerate(switch3):
     time.sleep(0.5)
 
 win.close()
+
 # %%

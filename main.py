@@ -7,6 +7,7 @@ For more information, see the `README.md` file and follow the steps from the
 # %%
 # Imports
 import time
+from pathlib import Path
 
 import mne
 import numpy as np
@@ -61,21 +62,17 @@ VLIMS = [-1.5, 1.5]
 # %%
 # Create the information about the data we expect
 # channel names correspond to "green" slot of electrodes in the control box
-# fmt: off
-ch_names = [
-    "Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "FT9", "FC5", "FC1", "FC2", "FC6",
-    "FT10", "T7", "C3", "Cz", "C4", "T8", "CP5", "CP1", "CP2", "CP6", "TP9", "P7",
-    "P3", "Pz", "P4", "P8", "TP10", "O1", "Oz", "O2"]
-# fmt: on
+bvef = Path("./electrode_cap/AC-32.bvef").resolve()
+montage = mne.channels.read_custom_montage(bvef)
+ch_names = montage.ch_names
+ch_names.remove("GND")
+ch_names.remove("REF")
+assert len(ch_names) == 32, "expected exactly 32 channels"
 sfreq = 100
 ch_types = ["eeg"] * len(ch_names) + ["misc"]
 ch_names += ["marker"]  # there is an additional marker channel inserted by LSL
 
 info = mne.create_info(ch_names, sfreq, ch_types)
-
-# Add standard 10-20 positions: "easycap-M1" corresponds to the acticap-64ch-standard2
-# caps that we use in the lab
-info.set_montage("easycap-M1")
 
 # %%
 # EEG Settings
@@ -189,10 +186,11 @@ while True:
         # frontal must be much higher than posterior to make switch "1"
         switch = 0 if power_frontal > (FRONTAL_BOOST_FACTOR * power_posterior) else 1
     elif SWITCH_TYPE == "continuous":
-        # continuous measure (rather than 0 / 1)
-        # be careful to never end up with "0" by chance
-        quotient = min(power_posterior, 1e-6) / min(power_frontal, 1e-6)
-        switch = np.log10(quotient)
+        # continuous measure (rather than 0 or 1)
+        try:
+            switch = np.log10(power_posterior / power_frontal)
+        except ZeroDivisionError:
+            switch = np.inf
     else:
         raise ValueError(f"Unknown SWITCH_TYPE: {SWITCH_TYPE}")
 

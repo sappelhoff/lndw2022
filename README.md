@@ -136,3 +136,6 @@ performed by the test session participant.
 - `testing_data/analyze_testing_data.py` --> script for exploring the testing data
 - `setup_drawing/lndw_setup_*` --> three files that show the hardware setup
 - `slides/*.pptx` --> the presentation slide show for the evening
+- `electrode_cap/AC-32.bvef` --> names and template locations of the 32 channels to be used
+- `electrode_cap/CAC-32.pdf` --> visualization of what the expected cap layout is
+- `electrode_cap/CAC-64.pdf` --> same as `CAC-32`, but with additional "yellow" channels that can be ignored
