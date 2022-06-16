@@ -45,6 +45,10 @@ Here the switch is "1" when the participant does not blink (frontal and posterio
 participant blinks (frontal average alpha power is much higher than
 posterior; see `FRONTAL_BOOST_FACTOR` in `main.py`).
 
+Another `SWITCH_TYPE` is called `"continuous"`, which calculates
+`log10(posterior - frontal)` and uses this continuous measure to turn the PsychoPy
+window either more or less blue or red (purple being "medium").
+
 Depending on the participant and training, one `SWITCH_TYPE` may work better
 than the other one.
 

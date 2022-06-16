@@ -10,17 +10,25 @@ import time
 
 import mne
 import numpy as np
+import matplotlib
 from psychopy import event, visual
 from pylsl import StreamInlet, resolve_stream
 
 # %%
 # Settings
+# Width and height of the PsychoPy window in pixels
+WIN_SIZE_PIXELS = (600, 300)
+
 # how many seconds of data to get per iteration
 # (this determines the "update" speed)
 SECONDS_TO_GET = 2
 
 # Low and high boundary over which frequencies to average
 FREQS = [8, 14]
+
+# Over which channels to average
+POSTERIOR_CHS = ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
+FRONTAL_CHS = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
 
 # Factors by which to scale either posterior or fronal average power
 SCALE_POSTERIOR = 1
@@ -30,13 +38,25 @@ SCALE_FRONTAL = 1
 FREQ_DECOMP_METHOD = "welch"
 
 # How to implement the BCI:
+# ----------
 # "sign" means take the difference between frontal and posterior average alpha power
+# ----------
 # "frontal boost" means switch is 1 unless frontal is at least "x" times higher than
 # posterior
+# ----------
+# "continuous" takes log10(posterior / frontal) and colors the window continuously
+# from red over purple to blue
 SWITCH_TYPE = "sign"
 
 # if "SWITCH_TYPE" is "frontal boost", what should "x" be (see above); else is ignored
 FRONTAL_BOOST_FACTOR = 2
+
+# if "SWITCH_TYPE" is "continuous", control which value "log10(posterior / frontal)"
+# corresponds to the extreme blue or extreme red
+# good defaults are -1.5 and 1.5, which means total red if posterior is about 30 times
+# higher than frontal and vice versa for total blue
+# NOTE: you could use unsymmetric limits like [-1.5, 1]
+VLIMS = [-1.5, 1.5]
 
 # %%
 # Create the information about the data we expect
@@ -81,23 +101,28 @@ n_fft = n_samples
 assert n_fft <= n_samples, "n_fft must be <= n_samples"
 
 # We will subtract power from posterior and frontal channels
-posterior_chs = ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
-frontal_chs = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
-picks_posterior = mne.pick_channels(info.ch_names, posterior_chs)
-picks_frontal = mne.pick_channels(info.ch_names, frontal_chs)
+picks_posterior = mne.pick_channels(info.ch_names, POSTERIOR_CHS)
+picks_frontal = mne.pick_channels(info.ch_names, FRONTAL_CHS)
 
 # %%
 # Psychopy window settings
-# The colors that are going to be switched
-c0 = (1, 0, 0)
-c1 = (0, 0, 1)
+# The colors that are going to be switched: RGB 0-1
+# For binary switching (red/blue): "sign" or "frontal boost"
+c0 = (0.5, 0, 0)
+c1 = (0, 0, 0.5)
+# ... or for continuous switching (red to blue): "continuous"
+cm1 = matplotlib.colors.LinearSegmentedColormap.from_list("red2blue", ["r", "b"])
+cnorm = matplotlib.colors.Normalize(vmin=VLIMS[0], vmax=VLIMS[1])
+cpick = matplotlib.cm.ScalarMappable(norm=cnorm, cmap=cm1)
+cpick.set_array([])
 
 # Opening a window
 # NOTE: We don't define a monitor so this will raise an expected and benign warning
 win = visual.Window(
-    color=c0,
+    color=(0.5, 0.5, 0.5),  # starting with gray color
     fullscr=False,
-    size=(600, 300),  # pixels
+    size=WIN_SIZE_PIXELS,  # pixels
+    colorSpace="rgb1",  # RGB scaled from 0 to 1
 )
 
 # %%
@@ -122,8 +147,7 @@ print(
     "Starting the program. Click on the PsychoPy window and press 'escape' to quit."
     "\n------------------------------"
 )
-finished = False
-while not finished:
+while True:
 
     # Pull a chunk of data: `chunk` is a list of lists, each list corresponding to a
     # sample with an associated timestamp. Each list is of length n_channels + 1, in
@@ -164,6 +188,11 @@ while not finished:
     elif SWITCH_TYPE == "frontal boost":
         # frontal must be much higher than posterior to make switch "1"
         switch = 0 if power_frontal > (FRONTAL_BOOST_FACTOR * power_posterior) else 1
+    elif SWITCH_TYPE == "continuous":
+        # continuous measure (rather than 0 / 1)
+        # be careful to never end up with "0" by chance
+        quotient = min(power_posterior, 1e-6) / min(power_frontal, 1e-6)
+        switch = np.log10(quotient)
     else:
         raise ValueError(f"Unknown SWITCH_TYPE: {SWITCH_TYPE}")
 
@@ -174,7 +203,12 @@ while not finished:
 
     # Switch the window color
     # ... need to flip twice because we change the window *background*
-    win.color = c1 if switch else c0
+    if SWITCH_TYPE == "continuous":
+        # continuous color
+        win.color = cpick.to_rgba(switch)[:3]
+    else:
+        # binary color red or blue
+        win.color = c1 if switch else c0
     _ = win.flip()
     _ = win.flip()
 
@@ -184,7 +218,6 @@ while not finished:
         print("\n    >>>> Registered an 'escape' key ... terminating program.\n")
         win.close()
         inlet.close_stream()
-        finished = True
         break
 
     # If this iteration took too long, we need to flush the buffer,
