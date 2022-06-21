@@ -5,7 +5,7 @@
 
 This repository contains code for the LNdW 2022 at the Max Planck Institute for Human Development (MPIB)
 for the Adaptive Memory and Decision Making group (AMD).
-In 2022, the LNdW will happen on the 2nd of July.
+In 2022, the LNdW will happen on the 2nd of July (17:00 - 24:00).
 
 The repository is hosted on GitHub: https://github.com/sappelhoff/lndw2022
 
@@ -15,42 +15,56 @@ It is mirrored on the ARC GitLab (internal only): https://arc-git.mpib-berlin.mp
 
 The general plan for this presentation is by Bernhard Spitzer.
 
+## Demonstration
+
 We will show visitors a brain computer interface (BCI) and have a discussion about "mind reading".
 
 - A participant from the AMD lab will wear an EEG cap and we record data live and show it on the screen
-- Furthermore, a screen window (via PsychoPy) will be shown in one of two possible colors
-- When commanded, the participant will either:
-    - (i) close their eyes and not move them
-    - (ii) close their eyes and move them behind closed eyelids
-- In the EEG data, (i) will register in high alpha power (frequencies 8-12 Hz) in posterior channels,
-  whereas (ii) will register in high alpha power in frontal channels
-- Internally, we continuously compute the difference between posterior and frontal average alpha power
-  and take the resulting "sign" to flip the color of the PsychoPy window between the two possible colors
-  (depending on the sign of our computations)
-- To visitors it will seem as if the participant thinks about a certain color, and the BCI can "read
-  that color" from their mind, whereas in truth -- we are using a simple "trick" to achieve this.
+- Furthermore, a screen window (via PsychoPy) will shown red or blue color
+  (or a continuous gradient between those colors)
+- The participant is then instructed to either:
+    - (i) think of something cold (the arctic, a cool drink, ...)
+    - (ii) think of something hot (the desert, ...)
+- What the participant really does however, is to influence their EEG in such a way that
+  average alpha power (frequencies 8-12 Hz) is higher either in posterior channels,
+  or in frontal channels (for methods on how to achive that, see below)
+- Internally, we continuously compute an index based on the difference between posterior and frontal
+  average alpha power and use this index to color the PsychoPy window
+- To visitors it will seem as if the BCI "reads the mind" of the participant thinking about something
+  hot or cold, whereas in truth -- we are using a simple "trick" to achieve this.
 - After a short presentation of this, we debrief the visitors, explain the "trick" and enter into a
   discussion of what **is** possible via BCIs, and what is (currently) not easily possible.
 
-**NOTE: The BCI can also be controlled in another way (see below)**
+## How to influence EEG frontal and posterior alpha power
 
-The list above describes what in `main.py` is defined as `SWITCH_TYPE="sign"`.
-Instead, one can change to `SWITCH_TYPE="frontal boost"`.
-In that case, the participant is supposed to have their eyes open and either:
+- Alpha power is typically very high in posterior channels when the participant is in a relaxed state
+  with their eyes closed
+- In contrast, alpha power is relatively low in frontal channels
+- Alpha power can be artificially brought up in frontal channels by moving the eyes (which are dipoles),
+  or rapidly blinking
+- During the deomnstration, the participant should try to not make the two states (blinking vs. relaxed)
+  too obvious to the audience ... to maintain the impression of the "trick" (until debriefing)
 
-- (i) focus on **not blinking**
-- (ii) blinking several times without anyone noticing
+In `main.py`, there is a variable called `SWITCH_TYPE`.
+This variable can be used to change between 3 particular methods:
 
-Here the switch is "1" when the participant does not blink (frontal and posterior average alpha power are approximately equal), and "0" when the
-participant blinks (frontal average alpha power is much higher than
-posterior; see `FRONTAL_BOOST_FACTOR` in `main.py`).
-
-Another `SWITCH_TYPE` is called `"continuous"`, which calculates
-`log10(posterior - frontal)` and uses this continuous measure to turn the PsychoPy
-window either more or less blue or red (purple being "medium").
+- `SWITCH_TYPE = "continuous"`
+    - The default method: We calculate `log10(posterior / frontal)` and use the resulting index
+      to continuously color the window more red or more blue (purple is the "middle")
+- `SWITCH_TYPE = "sign"`
+    - A "binary" method, where the color is either red or blue.
+      Here we calculate `sign(posterior - frontal)`.
+- `SWITCH_TYPE = "frontal boost"`
+    - A variation of the "sign" method, where the window is always blue, unless we find
+      `frontal > posterior * factor`, where `factor` can be freely adjusted
 
 Depending on the participant and training, one `SWITCH_TYPE` may work better
 than the other one.
+
+In `main.py` pay attention to the variables that are all upper-case.
+These variables may be easily modified to adjust the setup for a particular participant
+(for example `WIN_SIZE_PIXELS`, `SECONDS_TO_GET`, `SCALE_POSTERIOR`).
+Inline comments document what these variables do.
 
 # Required hardware
 

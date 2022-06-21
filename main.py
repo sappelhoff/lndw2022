@@ -18,18 +18,18 @@ from pylsl import StreamInlet, resolve_stream
 # %%
 # Settings
 # Width and height of the PsychoPy window in pixels
-WIN_SIZE_PIXELS = (600, 300)
+WIN_SIZE_PIXELS = (900, 450)
 
 # how many seconds of data to get per iteration
 # (this determines the "update" speed)
-SECONDS_TO_GET = 2
+SECONDS_TO_GET = 1
 
 # Low and high boundary over which frequencies to average
-FREQS = [8, 14]
+FREQS = [8, 12]
 
 # Over which channels to average
-POSTERIOR_CHS = ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
-FRONTAL_CHS = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
+POSTERIOR_CHS = ["O1", "Oz", "O2"]  # ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
+FRONTAL_CHS = ["Fp1", "Fp2"]  # ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
 
 # Factors by which to scale either posterior or fronal average power
 SCALE_POSTERIOR = 1
@@ -48,7 +48,7 @@ FREQ_DECOMP_METHOD = "welch"
 # ----------
 # "continuous" takes log10(posterior / frontal) and colors the window continuously
 # from red over purple to blue
-SWITCH_TYPE = "sign"
+SWITCH_TYPE = "continuous"
 
 # if "SWITCH_TYPE" is "frontal boost", what should "x" be (see above); else is ignored
 FRONTAL_BOOST_FACTOR = 2
