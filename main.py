@@ -9,9 +9,9 @@ For more information, see the `README.md` file and follow the steps from the
 import time
 from pathlib import Path
 
+import matplotlib
 import mne
 import numpy as np
-import matplotlib
 from psychopy import event, visual
 from pylsl import StreamInlet, resolve_stream
 
