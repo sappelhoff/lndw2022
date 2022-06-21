@@ -22,7 +22,7 @@ SECONDS_TO_GET = 2
 assert SECONDS_TO_GET <= 8, "Longest common epoch length in test data is 8s."
 
 # Low and high boundary over which frequencies to average
-FREQS = [8, 14]
+FREQS = [8, 12]
 
 FREQ_DECOMP_METHOD = "welch"
 
@@ -34,8 +34,8 @@ raw = mne.io.read_raw_brainvision(vhdr)
 
 # %%
 # Get channel selections
-posterior_chs = ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
-frontal_chs = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
+posterior_chs = ["O1", "Oz", "O2"]  # ["P7", "P3", "P4", "P8", "O1", "Oz", "O2"]
+frontal_chs = ["Fp1", "Fp2"]  # ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8"]
 picks_posterior = mne.pick_channels(raw.ch_names, posterior_chs)
 picks_frontal = mne.pick_channels(raw.ch_names, frontal_chs)
 
