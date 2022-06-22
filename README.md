@@ -146,7 +146,7 @@ performed by the test session participant.
 - `LICENSE` --> how the code and documentation in this project are licensed (but not the general idea)
 - `.gitignore` --> which files to ignore in the version control via git
 - `setup.cfg` --> configuration that is relevant when developing the code
-- `testing_data/offline_test.*` --> a BrainVision file triplet (`.eeg`, `.vhdr`, `.vmrk`) for testing offline
+- `testing_data/offline_test*.*` --> a BrainVision file triplet (`.eeg`, `.vhdr`, `.vmrk`) for testing offline
 - `testing_data/analyze_testing_data.py` --> script for exploring the testing data
 - `setup_drawing/lndw_setup_*` --> three files that show the hardware setup
 - `slides/*.pptx` --> the presentation slide show for the evening
