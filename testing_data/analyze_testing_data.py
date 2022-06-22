@@ -30,6 +30,7 @@ FREQ_DECOMP_METHOD = "welch"
 # Read data
 # (TP10 is bad, but we can leave it included)
 # NOTE: Perhaps the "eyes closed" event markers were accidentally exchanged (no idea)
+# NOTE: offline_test2 may be a bad test set ...just use offline_test
 raw = mne.io.read_raw_brainvision(vhdr)
 
 # %%
